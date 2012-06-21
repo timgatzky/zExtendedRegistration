@@ -1,0 +1,127 @@
+<?php if($this->recommendation_error) echo $this->recommendation_error; ?>
+
+<!-- indexer::stop -->
+<div class="<?php echo $this->class; ?><?php if (!$this->tableless): ?> tableform<?php endif; ?> block"<?php echo $this->cssID; ?><?php if ($this->style): ?> style="<?php echo $this->style; ?>"<?php endif; ?>>
+<?php if ($this->headline): ?>
+
+<<?php echo $this->hl; ?>><?php echo $this->headline; ?></<?php echo $this->hl; ?>>
+<?php endif; ?>
+
+<form action="<?php echo $this->action; ?>" id="<?php echo $this->formId; ?>" method="post" enctype="<?php echo $this->enctype; ?>">
+<div class="formbody">
+<input type="hidden" name="FORM_SUBMIT" value="<?php echo $this->formId; ?>">
+<input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+<?php echo $this->hidden; ?>
+<?php if (!$this->tableless): ?>
+<table>
+<?php echo $this->fields; ?>
+  <tr class="<?php echo $this->rowLast; ?> row_last">
+    <td class="col_0 col_first">&nbsp;</td>
+    <td class="col_1 col_last"><div class="submit_container"><input type="submit" class="submit" value="<?php echo $this->slabel; ?>"></div></td>
+  </tr>
+</table>
+<?php else: ?>
+<div class="fields">
+<?php echo $this->fields; ?>
+</div>
+<div class="submit_container">
+  <input type="submit" class="submit" value="<?php echo $this->slabel; ?>">
+</div>
+<?php endif; ?>
+</div>
+</form>
+<?php if ($this->hasError): ?>
+
+<script>
+try {
+  window.scrollTo(null, ($('<?php echo $this->formId; ?>').getElement('p.error').getPosition().y - 20));
+} catch(e) {}
+</script>
+<?php endif; ?>
+
+</div>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+
+/**
+ * Doublecheck email fields
+ */
+function compareInput(str1, str2)
+{
+	if(str1 == '' || str1 == '' )
+		return false;
+	else if(str1 == str2)
+		return true;
+	else 
+		return false;
+}
+
+window.addEvent('domready', function() 
+{
+	if(document.id('<?php echo $this->formId; ?>').getElement('#ctrl_email_confirmation') == null)
+	{
+		return;
+	}
+	
+	var form = document.id('<?php echo $this->formId; ?>');
+	var email1 = form.getElement('#ctrl_email');
+	var email2 = form.getElement('#ctrl_email_confirmation');
+	var submit = form.getElement('.submit');
+	var compare;
+	
+	// deaktivate by default
+	submit.disabled = 1;
+	compare = compareInput(email1.get('value'),email2.get('value'))
+	if(compare)
+	{
+		submit.disabled = 0;
+		email2.addClass('correct');
+		
+	}
+			
+	// eventlisteners
+	email1.addEvent('keyup', function(event) {
+		var t1 = this.get('value');
+		var t2 = email2.get('value');
+		
+		compare = compareInput(t1, t2);
+		if(compare)
+		{
+			submit.disabled = 0;
+			email2.removeClass('wrong');
+			email2.addClass('correct');
+		}
+		else
+		{
+			submit.disabled = 1;
+			email2.addClass('wrong');
+			email2.removeClass('correct');
+		}
+	});
+	
+	email2.addEvent('keyup', function(event) {
+		var t1 = email1.get('value');;
+		var t2 = this.get('value')
+		
+		compare = compareInput(t1, t2);
+		if(compare)
+		{
+			submit.disabled = 0;
+			email2.removeClass('wrong');
+			email2.addClass('correct');
+		}
+		else
+		{
+			submit.disabled = 1;
+			email2.addClass('wrong');
+			email2.removeClass('correct');
+			
+		}
+	});
+});
+
+/* ]]> */
+</script>
+
+<!-- indexer::continue -->

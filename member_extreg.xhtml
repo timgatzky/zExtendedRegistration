@@ -77,6 +77,7 @@ window.addEvent('domready', function()
 	{
 		submit.disabled = 0;
 		email2.addClass('correct');
+		
 	}
 			
 	// eventlisteners
@@ -120,23 +121,7 @@ window.addEvent('domready', function()
 	});
 });
 
-/**
- * Cleardefault support
- */
-window.addEvent('domready', function() 
-{
-	
-	
-	if(document.id('<?php echo $this->formId; ?>').getElement('#ctrl_email_confirmation') == null)
-	{
-		return;
-	}
-	
-	
-});
-
 /* ]]> */
 </script>
-
 
 <!-- indexer::continue -->

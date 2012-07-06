@@ -44,8 +44,6 @@ else
 	$GLOBALS['FE_MOD']['user']['registration'] = 'ModuleExtendedRegistration';
 }
 
-$GLOBALS['FE_MOD']['user']['registration'] = 'ModuleExtendedRegistration';
-
 /**
  * GLOBALS
  */

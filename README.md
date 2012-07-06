@@ -15,4 +15,4 @@ This extension brings the following features:
 
 Credits
 -------
-This extension was sponsored by <a href="http://qbamedia.de/" target="_blank">qbamedia, Berlin</a>
+This extension was sponsored by <a href="http://www.insignum.de" target="_blank">insignum, Berlin</a> and <a href="http://qbamedia.de/" target="_blank">qbamedia, Berlin</a>

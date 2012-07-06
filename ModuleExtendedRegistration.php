@@ -10,21 +10,21 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation, either
  * version 3 of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program. If not, please visit the Free
  * Software Foundation website at <http://www.gnu.org/licenses/>.
  *
  * PHP version 5
- * @copyright  Tim Gatzky 2012 
+ * @copyright  Tim Gatzky 2012
  * @author     Tim Gatzky <info@tim-gatzky.de>
- * @package    zExtendedRegistration 
- * @license    LGPL 
+ * @package    zExtendedRegistration
+ * @license    LGPL
  * @filesource
  */
 
@@ -36,14 +36,14 @@ class ModuleExtendedRegistration extends ModuleRegistration
 	 * @var
 	 */
 	protected $strTable = 'tl_zextendedregistration';
-	
+
 	/**
 	 * Table to store field data
 	 * @var
 	 */
 	protected $strTableFields = 'tl_zextendedregistration_fields';
-	
-	
+
+
 	/**
 	 * Generate module
 	 */
@@ -56,12 +56,12 @@ class ModuleExtendedRegistration extends ModuleRegistration
 			'reg_allowLogin' => $this->reg_allowLogin,
 			'jumpTo' => $this->jumpTo,
 		);
-		
+
 		// overwrite
 		//$this->Input->setPost('FORM_SUBMIT') == 'tl_registration_noCompile';
 		$this->reg_activate = 0;
-		
-				
+
+
 		// Check for double email conformation
 		if ($this->Input->post('FORM_SUBMIT') == 'tl_registration' && strlen($this->Input->post('email_confirmation')) )
 		{
@@ -71,24 +71,23 @@ class ModuleExtendedRegistration extends ModuleRegistration
 				$this->reg_activate = 0;
 			}
 		}
-				
-	
+
 		$recommended = false;
 		$arrRecommended = array();
-			
+
 		// Check for recommendation
 		if ($this->Input->post('FORM_SUBMIT') == 'tl_registration' && $this->extReg_recommendation )
 		{
 			if( $this->Input->post('recommended_from_email') && $this->Input->post('recommended_from_email') != $this->Input->post('email')  )
 			{
 				$arrRecommended['email'] = $this->Input->post('recommended_from_email');
-				
+
 			}
 			if( $this->Input->post('recommended_from_username') && $this->Input->post('recommended_from_username') != $this->Input->post('username') )
 			{
 				$arrRecommended['username'] = $this->Input->post('recommended_from_username');
 			}
-			
+
 			if(count($arrRecommended))
 			{
 				$strWHERE = '';
@@ -97,51 +96,49 @@ class ModuleExtendedRegistration extends ModuleRegistration
 					$strWHERE .= $field . '=' . "'" . $value . "'" . ' AND ';
 				}
 				$strWHERE = substr($strWHERE, 0, -5);
-				
+
 				$objMember = $this->Database->prepare("SELECT * FROM tl_member WHERE " . $strWHERE . " AND disable!=1")
-									->limit(1)
-									->execute();
+				->limit(1)
+				->execute();
 				if($objMember->numRows)
 				{
 					$recommended = true;
 				}
-				
+
 			}
 		}
-	
+
 		// user has filled out the inputs, but entered an invalid recommendation
 		if($this->extReg_recommendation && !$recommended && $this->Input->post('recommended_from_email') || $this->Input->post('recommended_from_username'))
 		{
-		   	$this->Input->setPost('FORM_SUBMIT','tl_registration_hasError');
+			$this->Input->setPost('FORM_SUBMIT','tl_registration_hasError');
 			$this->reg_activate = 0;
 			$this->hasRecommendationError = true;
 			$this->recommendation_error = sprintf('<p class="error">'.$GLOBALS['TL_LANG']['MSC']['recommended_error'].'</p>', implode(',',$arrRecommended) );
 		}
 		// user has filled out the inputs, recommendation is valid
 		else if($this->extReg_recommendation && $recommended && $this->Input->post('recommended_from_email') || $this->Input->post('recommended_from_username'))
-		{
-			$this->reg_activate = 1;
-		}
+			{
+				$this->reg_activate = 1;
+			}
 		// user has NOT filled out the inputs (default)
 		// do not send activation link directely, send to admin only
 		else if($this->Input->post('FORM_SUBMIT') == 'tl_registration' && $this->extReg_recommendation && $this->extReg_adminOnly)
-		{
-			$this->reg_activate = 0;
-		}
+			{
+				$this->reg_activate = 0;
+			}
 		// contao default
 		else
 		{
 			$this->reg_activate = $arrDefault['reg_activate'];
 		}
-		
-		// compile	
-		parent::compile($this);
-		
-		
-		// add email confirmation javascript
-		
+
+		#$this->editable = deserialize($this->editable);
+
+		// compile
+		parent::compile();
 	}
-	
+
 	/**
 	 * OVERRIDE
 	 * Create a new user and redirect
@@ -159,7 +156,7 @@ class ModuleExtendedRegistration extends ModuleRegistration
 		{
 			$arrData['groups'] = $this->reg_groups;
 		}
-			
+
 
 		// Disable account
 		$arrData['disable'] = 1;
@@ -178,50 +175,50 @@ class ModuleExtendedRegistration extends ModuleRegistration
 
 				switch ($strKey)
 				{
-					case 'domain':
-						$strConfirmation = str_replace($strChunk, $this->Environment->host, $strConfirmation);
-						break;
+				case 'domain':
+					$strConfirmation = str_replace($strChunk, $this->Environment->host, $strConfirmation);
+					break;
 
-					case 'link':
-						$strConfirmation = str_replace($strChunk, $this->Environment->base . $this->Environment->request . (($GLOBALS['TL_CONFIG']['disableAlias'] || strpos($this->Environment->request, '?') !== false) ? '&' : '?') . 'token=' . $arrData['activation'], $strConfirmation);
-						break;
+				case 'link':
+					$strConfirmation = str_replace($strChunk, $this->Environment->base . $this->Environment->request . (($GLOBALS['TL_CONFIG']['disableAlias'] || strpos($this->Environment->request, '?') !== false) ? '&' : '?') . 'token=' . $arrData['activation'], $strConfirmation);
+					break;
 
 					// HOOK: support newsletter subscriptions
-					case 'channel':
-					case 'channels':
-						if (!in_array('newsletter', $this->Config->getActiveModules()))
-						{
-							break;
-						}
+				case 'channel':
+				case 'channels':
+					if (!in_array('newsletter', $this->Config->getActiveModules()))
+					{
+						break;
+					}
 
-						// Make sure newsletter is an array
-						if (!is_array($arrData['newsletter']))
+					// Make sure newsletter is an array
+					if (!is_array($arrData['newsletter']))
+					{
+						if ($arrData['newsletter'] != '')
 						{
-							if ($arrData['newsletter'] != '')
-							{
-								$arrData['newsletter'] = array($arrData['newsletter']);
-							}
-							else
-							{
-								$arrData['newsletter'] = array();
-							}
-						}
-
-						// Replace the wildcard
-						if (!empty($arrData['newsletter']))
-						{
-							$objChannels = $this->Database->execute("SELECT title FROM tl_newsletter_channel WHERE id IN(". implode(',', array_map('intval', $arrData['newsletter'])) .")");
-							$strConfirmation = str_replace($strChunk, implode("\n", $objChannels->fetchEach('title')), $strConfirmation);
+							$arrData['newsletter'] = array($arrData['newsletter']);
 						}
 						else
 						{
-							$strConfirmation = str_replace($strChunk, '', $strConfirmation);
+							$arrData['newsletter'] = array();
 						}
-						break;
+					}
 
-					default:
-						$strConfirmation = str_replace($strChunk, $arrData[$strKey], $strConfirmation);
-						break;
+					// Replace the wildcard
+					if (!empty($arrData['newsletter']))
+					{
+						$objChannels = $this->Database->execute("SELECT title FROM tl_newsletter_channel WHERE id IN(". implode(',', array_map('intval', $arrData['newsletter'])) .")");
+						$strConfirmation = str_replace($strChunk, implode("\n", $objChannels->fetchEach('title')), $strConfirmation);
+					}
+					else
+					{
+						$strConfirmation = str_replace($strChunk, '', $strConfirmation);
+					}
+					break;
+
+				default:
+					$strConfirmation = str_replace($strChunk, $arrData[$strKey], $strConfirmation);
+					break;
 				}
 			}
 
@@ -239,13 +236,13 @@ class ModuleExtendedRegistration extends ModuleRegistration
 		{
 			$arrData['newsletter'] = array($arrData['newsletter']);
 		}
-		
+
 		// ---
 		// get additional fields
 		$objExtRegFields = $this->Database->prepare("SELECT * FROM " . $this->strTable . " WHERE module=?")
-						->limit(1)
-						->execute($this->id);
-		
+		->limit(1)
+		->execute($this->id);
+
 		// build set array and clean out set array for tl_member
 		if($objExtRegFields->numRows)
 		{
@@ -256,29 +253,29 @@ class ModuleExtendedRegistration extends ModuleRegistration
 					// tl_zextendedregistration_fields
 					$arrDataExtReg = array
 					(
-						'pid'		=> $objExtRegFields->form,
-						'tstamp'	=> time(),
-						'name'		=> $f['name'],
-						'type'		=> $f['type'],
-						'fieldConf'	=> $f['fieldConf'],
-						'data'		=> $arrData[$f['name']]
+						'pid'  => $objExtRegFields->form,
+						'tstamp' => time(),
+						'name'  => $f['name'],
+						'type'  => $f['type'],
+						'fieldConf' => $f['fieldConf'],
+						'data'  => $arrData[$f['name']]
 					);
 					$objMoreUserFields = $this->Database->prepare("INSERT INTO " . $this->strTableFields . " %s")->set($arrDataExtReg)->execute();
-		
+
 					// tl_member
 					unset($arrData[$f['name']]);
 				}
 			}
 		}
-		
+
 		// Create user
 		$objNewUser = $this->Database->prepare("INSERT INTO tl_member %s")->set($arrData)->execute();
 		$insertId = $objNewUser->insertId;
-		
+
 		// Update user id in tl_zextendedregistration_fields
-		$this->Database	->prepare("UPDATE " . $this->strTableFields . " SET user=? WHERE pid=?")
-						->execute($objNewUser->insertId, $objExtRegFields->id);
-		
+		$this->Database ->prepare("UPDATE " . $this->strTableFields . " SET user=? WHERE pid=?")
+		->execute($objNewUser->insertId, $objExtRegFields->id);
+
 
 		// Assign home directory
 		if ($this->reg_assignDir && is_dir(TL_ROOT . '/' . $this->reg_homeDir))
@@ -295,7 +292,7 @@ class ModuleExtendedRegistration extends ModuleRegistration
 			new Folder($this->reg_homeDir . '/' . $strUserDir);
 
 			$this->Database->prepare("UPDATE tl_member SET homeDir=?, assignDir=1 WHERE id=?")
-						   ->execute($this->reg_homeDir . '/' . $strUserDir, $insertId);
+			->execute($this->reg_homeDir . '/' . $strUserDir, $insertId);
 		}
 
 		// HOOK: send insert ID and user data
@@ -316,9 +313,9 @@ class ModuleExtendedRegistration extends ModuleRegistration
 
 		$this->jumpToOrReload($this->jumpTo);
 	}
-	
-	
-	
+
+
+
 }
 
 ?>

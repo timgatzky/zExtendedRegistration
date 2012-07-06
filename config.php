@@ -28,22 +28,33 @@
  * @filesource
  */
 
-// extend xtmembers -> inherited call to zExtendedRegistration
-class ModuleExtendedRegistrationCompatible extends ModuleRegistrationExtended
+/**
+ * HOOKS
+ */
+$GLOBALS['TL_HOOKS']['zExtendedRegistration']['getFormFieldDCA'][] = array('zEfgFormFields', 'handleEfgFormFields');
+
+
+// Check if xtmembers is in use, use compabtible
+if(in_array('xtmembers', $this->getActiveModules()) )
 {
-	protected function compile()
-	{
-		$objModule = $this->Database->prepare("SELECT * FROM tl_module WHERE id=?")
-		   			->limit(1)
-		   			->execute($this->id);
-		
-		$objModule->editable = deserialize($objModule->editable);
-		$objModuleExtReg = new ModuleExtendedRegistration($objModule);
-		$objModuleExtReg->compile();
-		
-		// compile ModuleRegistrationExtended from xtmembers
-		parent::compile();
-	}
+	$GLOBALS['FE_MOD']['user']['registration'] = 'ModuleExtendedRegistrationCompatible';
+}
+else
+{	
+	$GLOBALS['FE_MOD']['user']['registration'] = 'ModuleExtendedRegistration';
 }
 
+/**
+ * GLOBALS
+ */
+$GLOBALS['EXTENDED_REGISTRATION']['cronTitle'] = 'Delayed registration for %s';
+$GLOBALS['EXTENDED_REGISTRATION']['cronjob'] = 'system/modules/zExtendedRegistration/cronjob.php';
+$GLOBALS['EXTENDED_REGISTRATION']['minDelay'] = 1; // minutes
+
+/**
+ * Form field classes
+ */
+$GLOBALS['TL_FFL']['explanation'] = 'zFormExplanation';
+$GLOBALS['TL_FFL']['html'] = 'zFormHtml';
+$GLOBALS['TL_FFL']['headline'] = 'zFormHeadline';
 ?>

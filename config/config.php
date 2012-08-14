@@ -32,6 +32,7 @@
  * HOOKS
  */
 $GLOBALS['TL_HOOKS']['zExtendedRegistration']['getFormFieldDCA'][] = array('zEfgFormFields', 'handleEfgFormFields');
+$GLOBALS['TL_HOOKS']['createNewUser'][] = array('zExtendedRegistration','createNewUserCallback');
 
 
 // Check if xtmembers is in use, use compabtible

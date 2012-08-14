@@ -31,6 +31,9 @@
 // extend xtmembers -> inherited call to zExtendedRegistration
 class ModuleExtendedRegistrationCompatible extends ModuleRegistrationExtended
 {
+	/**
+	 * Generate module
+	 */	
 	protected function compile()
 	{
 		$objModule = $this->Database->prepare("SELECT * FROM tl_module WHERE id=?")
@@ -39,10 +42,11 @@ class ModuleExtendedRegistrationCompatible extends ModuleRegistrationExtended
 		
 		$objModule->editable = deserialize($objModule->editable);
 		$objModuleExtReg = new ModuleExtendedRegistration($objModule);
-		$objModuleExtReg->compile();
 		
 		// compile ModuleRegistrationExtended from xtmembers
 		parent::compile();
+				
+		$objModuleExtReg->compile();
 	}
 }
 

@@ -31,6 +31,9 @@
 /**
  * HOOK
  */
+$GLOBALS['TL_DCA']['tl_member']['config']['onload_callback'][] = array('tl_member_zExtendedRegistration', 'modifyDCA');
+	
+
 if(TL_MODE=='FE')
 {
 	$GLOBALS['TL_DCA']['tl_member']['config']['onload_callback'][] = array('tl_member_zExtendedRegistration', 'initializeDataContainerFE');
@@ -38,6 +41,7 @@ if(TL_MODE=='FE')
 else
 {
 	$GLOBALS['TL_DCA']['tl_member']['config']['onload_callback'][] = array('tl_member_zExtendedRegistration', 'initializeDataContainerBE');
+	
 	#$GLOBALS['TL_DCA']['tl_member']['config']['onload_callback'][] = array('tl_member_zExtendedRegistration', 'dropTemporaryColumns');
 	
 	$this->import('tl_member_zExtendedRegistration');
@@ -210,29 +214,6 @@ class tl_member_zExtendedRegistration extends Backend
 			}
 			
 			
-			
-			
-			// update/insert new external form field user data in database from registration form
-			if($this->Input->post('FORM_SUBMIT') == 'tl_registration')
-			{
-				// serialize arrays
-				$arrSet['formfields'] = serialize($arrSet['formfields']);
-			
-				// check if entry should be updated or a new entry should be created
-				$objExtReg = $this->Database->prepare("SELECT id FROM " . $this->strTable . " WHERE module=? AND form=?")
-								->limit(1)
-								->execute($module['id'], $module['extReg_form']);
-				
-				if($objExtReg->numRows)
-				{
-					$this->updateDatabase($arrSet);
-				}
-				else
-				{
-					$this->insertDatabase($arrSet);
-				}
-			}
-			
 			// update database in FE from personal data form, member form
 			if($this->Input->post('FORM_SUBMIT') == 'tl_member_'.$module['id'])
 			{
@@ -301,7 +282,23 @@ class tl_member_zExtendedRegistration extends Backend
 		}
 
 		// Language and labels
-		$label = $f['label'] ?: $f['name'] ?: $f['type'] . $f['id'];
+		#$label = $f['label'] ?: $f['name'] ?: $f['type'] . $f['id'];
+				
+		#fix for php versions not understanding short if clauses
+		$label = '';
+		if(strlen($f['label']))
+		{
+			$label = $f['label'];
+		}
+		else if(strlen($f['name']))
+		{
+			$label = $f['name'];
+		}
+		else
+		{
+			$label = $f['type'] . $f['id'];
+		}
+		
 		$description = sprintf($GLOBALS['TL_LANG']['MSC']['field_description'], $fieldName);
 		
 		$GLOBALS['TL_LANG'][$this->dcTable][$fieldName] = array($label,$description);
@@ -557,21 +554,16 @@ class tl_member_zExtendedRegistration extends Backend
 	 * @param array
 	 * @return array
 	 */
-	 private function getFrontendModulesOnPage($intPage, $strInColumn='', $arrTypes=array())
+	 private function getFrontendModulesOnPage($intPage, $arrTypes=array(),$strInColumn='')
 	 {
 	 	global $objPage;
 	 	
 	 	$arrModules = array();
-	 	
-		#$objModuleStatement = $this->Database->prepare("
-		#	SELECT * FROM tl_module m WHERE m.id=
-		#	(
-		#		SELECT c.module FROM tl_content c WHERE type='module' AND pid=
-		#		(
-		#			SELECT a.id	FROM tl_article a WHERE	pid=? AND published=1 " . (strlen($strInColumn) ? " AND inColumn='".$strInColumn."'" : '') . "
-		#		)  
-		#	)"
-		#);
+	 		
+	   	if(!is_array($arrTypes))
+	   	{
+		   	$arrTypes = array($arrTypes);
+	   	}
 	   	
 	   	// Overwrite page object if its not the current page, just for further use in this function
 	   	if($objPage->id != $intPage)
@@ -602,11 +594,14 @@ class tl_member_zExtendedRegistration extends Backend
 			{
 				continue;
 			}
-			$objModule = $this->Database->prepare("SELECT * FROM tl_module WHERE id=?" . (count($arrTypes) ? " AND type IN'".implode(',', $arrTypes)."'" : "") )
+			$objModule = $this->Database->prepare("SELECT * FROM tl_module WHERE id=?" . (count($arrTypes) ? " AND type IN('".implode(',', $arrTypes)."')" : "") )
 			   				->limit(1)
 			   				->execute($module['mod']);
-			   
-			$arrModules[] = $objModule->row();
+			
+			if($objModule->numRows > 0)
+			{ 
+				$arrModules[] = $objModule->row();
+			}
 		}
 	   
 	   	// Get modules in articles
@@ -663,6 +658,32 @@ class tl_member_zExtendedRegistration extends Backend
 	{
 		$this->Database->prepare("UPDATE " . $this->strTable . " %s")->set($arrSet)->execute();
 	}
+
+
+	/**
+	 * Modify field dca
+	 */
+	public function modifyDca()
+	{
+		// fix for xtmembers to be compatible with other extensions that inherits directely
+		if(in_array('xtmembers', $this->Config->getActiveModules()) )
+		{
+			global $objPage;
+			$arrModules = $this->getFrontendModulesOnPage($objPage->id,'registration');
+			
+			foreach($arrModules as $module)
+			{
+				$objModule = $this->Database->prepare("SELECT * FROM tl_module WHERE id=?")
+								->limit(1)
+								->execute($module);
+				$objModXtMembers = new ModuleRegistrationExtended($objModule);
+				
+				// modify field setting
+				$GLOBALS['TL_DCA']['tl_member']['fields']['groupselection']['options'] = $objModXtMembers->getGroupSelection();
+			}
+		}			
+	}
+	
 
 	
 }

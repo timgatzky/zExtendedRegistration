@@ -225,7 +225,13 @@ class tl_module_zExtendedRegistration extends Backend
 			{
 				if(!strlen($objFormfields->label))
 				{
-					$objFormfields->label = $objFormfields->name ?: $objFormfields->type . $objFormfields->id; //1
+					#fix for older php versions
+					$objFormfields->label = $objFormfields->type . $objFormfields->id;
+					
+					if($objFormfields->name)
+					{
+						$objFormfields->label = $objFormfields->name;
+					}
 				}	
 				if(!strlen($objFormfields->name))
 				{

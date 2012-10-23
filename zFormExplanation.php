@@ -37,7 +37,10 @@ class zFormExplanation extends FormExplanation
 {
 	public function generate()
 	{
-		$this->text = $this->value;
+		if(TL_MODE == 'FE')
+		{
+			$this->text = $this->value;
+		}
 		return parent::generate();
 	}
 }

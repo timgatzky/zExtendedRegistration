@@ -37,7 +37,10 @@ class zFormHtml extends FormHtml
 {
 	public function generate()
 	{
-		$this->html = $this->value;
+		if(TL_MODE == 'FE')
+		{
+			$this->html = $this->value;
+		}
 		return parent::generate();
 	}
 }

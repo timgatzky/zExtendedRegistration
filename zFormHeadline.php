@@ -39,7 +39,16 @@ class zFormHeadline extends FormHeadline
 	{
 		if(TL_MODE == 'FE')
 		{
-			$this->text = $this->value;
+			// render outside registration form
+			if(!$this->value && !$this->arrConfiguration['text'])
+			{
+				$this->arrConfiguration['text'] = $this->text;
+			}
+			// rendered in registration form
+			else if($this->value)
+			{
+				$this->text = $this->value;
+			}
 		}
 		return parent::generate();
 	}

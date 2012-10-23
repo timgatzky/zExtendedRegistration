@@ -39,7 +39,11 @@ class zFormHtml extends FormHtml
 	{
 		if(TL_MODE == 'FE')
 		{
-			$this->html = $this->value;
+			// rendered in registration form
+			if($this->value)
+			{
+				$this->html = $this->value;
+			}
 		}
 		return parent::generate();
 	}
